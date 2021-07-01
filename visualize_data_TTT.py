@@ -2,16 +2,16 @@
 import csv
 import matplotlib.pyplot as plt
 
-input_file = 
+input_file = "1_col.csv"
 value_delimiter = ','
-has_header = True
-has_index = True
-save_to = ""
+has_header = False
+has_index = False
+save_to = "test.jpeg"
 
 def intake(file_in,value_delimiter,has_header,has_index):
 	#Read data in
 	with open(file_in) as csvfile:
-		csvreader = csv.reader(csvfile, delimiter=value_delimiter)
+		csvreader = list(csv.reader(csvfile, delimiter=value_delimiter))
 		
 		if has_header:
 			headers = csvreader[0]
@@ -25,25 +25,29 @@ def intake(file_in,value_delimiter,has_header,has_index):
 		else:
 			dataset = [row for row in csvreader]
 
-
 	return dataset, headers
 
 def multi_plots(dataset,headers,save_to=""):
 	plt.figure()
+	if len(headers) <= 1:
+		plt.subplot(sub_id)
+		plt.title(subplot_name)
+		plt.plot(dataset[:][nbr])
 	for nbr,subplot_name in enumerate(headers):
+		print(dataset[:][nbr])
 		sub_id = int(str(len(headers))+'1'+str(nbr+1))
 		plt.subplot(sub_id)
 		plt.title(subplot_name)
-		plt.plot(dataset[:,nbr])
+		plt.plot(dataset[:][nbr])
 	
 	if save_to != "":
 		plt.savefig(save_to)
 	plt.show()
 
 
-def main(input_file,value_delimiter,has_header,has_index):
+def main(input_file,value_delimiter,has_header,has_index,save_to=""):
 	dataset, headers = intake(input_file,value_delimiter,has_header,has_index)
-	multi_plots(dataset,headers,)
+	multi_plots(dataset,headers,save_to)
 
 if __name__ == "__main__":
-	main()
+	main(input_file,value_delimiter,has_header,has_index,save_to)
