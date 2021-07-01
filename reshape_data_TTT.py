@@ -1,12 +1,14 @@
-#Show data in graph format with one subplot per axis
 import csv
-import matplotlib.pyplot as plt
+import numpy as np
 
 input_file = "1_col_3d.csv"
 value_delimiter = ','
 has_header = False
 has_index = False
-save_to = "test.jpeg"
+
+nbr_axis = 3
+buffer_size = 16
+
 
 
 #Takes in the data and returns an array containing it. Cleans up index and headers if present. 
@@ -29,27 +31,26 @@ def intake(file_in,value_delimiter,has_header,has_index):
 
 	return dataset, headers
 
-#Display the data with one graph per column
-def multi_plots(dataset,headers,save_to=""):
-	plt.figure()
-	if len(headers) <= 1:
-		plt.title(headers[0])
-		plt.plot(dataset)
-	for nbr,subplot_name in enumerate(headers):
-		print(dataset[:][nbr])
-		sub_id = int(str(len(headers))+'1'+str(nbr+1))
-		plt.subplot(sub_id)
-		plt.title(subplot_name)
-		plt.plot(dataset[:][nbr])
+
+def reformat(np_arr,nbr_axis,buffer_size):
+	nbr_cols = nbr_axis
+
+	np_arr = np_arr.flatten()
+	nbr_vals = np_arr.shape[0]
+	nbr_set_vals = int(nbr_vals/nbr_cols)
 	
-	if save_to != "":
-		plt.savefig(save_to)
-	plt.show()
+	overflow, nbr_sections = nbr_set_vals%buffer_size, nbr_set_vals//buffer_size
+	
+	if overflow > 0:
+		np_reformatted = np.reshape(np_arr[:-overflow*nbr_cols],(nbr_sections,buffer_size*nbr_cols))
+	else:
+		np_reformatted = np.reshape(np_arr,(nbr_sections,buffer_size*nbr_cols))
+	
+	return np_reformatted
 
-
-def main(input_file,value_delimiter,has_header,has_index,save_to=""):
+def main(input_file,value_delimiter,has_header,has_index,nbr_axis,buffer_size):
 	dataset, headers = intake(input_file,value_delimiter,has_header,has_index)
-	multi_plots(dataset,headers,save_to)
+	reformatted_arr = reformat(np.array(dataset),nbr_axis,buffer_size)
 
 if __name__ == "__main__":
-	main(input_file,value_delimiter,has_header,has_index,save_to)
+	main(input_file,value_delimiter,has_header,has_index,nbr_axis,buffer_size)

@@ -19,7 +19,8 @@ from scipy.io import wavfile
 from argparse import ArgumentParser
 import os
 
-
+LOGIC PROBLEM IN REFORMAT() the return staement returning np.array(ref_arrs)[0]. Why [0]????
+ 
 # Reading object
 # Create output file
 # Check nbr axis == nbr columns
