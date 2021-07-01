@@ -31,7 +31,6 @@ def intake(file_in,value_delimiter,has_header,has_index):
 
 	return dataset, headers
 
-
 def reformat(np_arr,nbr_axis,buffer_size):
 	nbr_cols = nbr_axis
 
