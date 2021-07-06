@@ -36,7 +36,6 @@ def multi_plots(dataset,headers,save_to=""):
 		plt.title(headers[0])
 		plt.plot(dataset)
 	for nbr,subplot_name in enumerate(headers):
-		print(dataset[:][nbr])
 		sub_id = int(str(len(headers))+'1'+str(nbr+1))
 		plt.subplot(sub_id)
 		plt.title(subplot_name)
