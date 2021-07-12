@@ -12,7 +12,7 @@ import numpy as np
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.05.1/neai_cli'
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.05.03.2/neai_cli'
 NEAI_CLI_path = '/home/ludusmagnus/Desktop/neai_cli_unix_v2021.05.14.1/neai_cli'
-result_path ='report_Paderborne_Long_invest.txt'
+
 
 def data_org_run(args, files_in_opt=[]):
 	if files_in_opt != []:
@@ -65,7 +65,7 @@ def data_org_run(args, files_in_opt=[]):
 	return file_out_names
 
 def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,signal_length,freq):
-	algo_type = 'classification'
+	algo_type = "anomaly_detection"#'classification'
 	project_Name = root_name+'-'+str(signal_length)+'-F'+str(freq)
 	
 	#Start NEAI engine
@@ -105,24 +105,35 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 
 	signals_used = ''
 	signal_nbr = 1
-	for file in train_files:
-		signal_id = str(signal_nbr)
-		result = subprocess.run([NEAI_CLI_path,#str('.'+NEAI_CLI_path),
-								'signal',
-								'-import',
-								'-file_path',file,
-								'-class', '-name', os.path.basename(file),
-								'-delimiter',value_delimiter,
-								'-id', signal_id,
-								'-project',project_Name,
-								],stdout=subprocess.PIPE)
+	signal_id = str(signal_nbr)
+	result = subprocess.run([NEAI_CLI_path,#str('.'+NEAI_CLI_path),
+							'signal',
+							'-import',
+							'-file_path',train_files[0],
+							'-nominal',#'-class', '-name', os.path.basename(file),
+							'-delimiter',value_delimiter,
+							'-id', signal_id,
+							'-project',project_Name,
+							],stdout=subprocess.PIPE)
 
-		#time.sleep(100)
-		if signal_nbr == 1: signals_used = signal_id
-		else: signals_used = signals_used + ',' + signal_id
-		signal_nbr = signal_nbr + 1
-		#print("Signal import",result)
-		#print(signal_nbr, file)
+	signals_used = signal_id
+
+	signal_nbr = 2
+	signal_id = str(signal_nbr)
+	result = subprocess.run([NEAI_CLI_path,#str('.'+NEAI_CLI_path),
+							'signal',
+							'-import',
+							'-file_path',train_files[1],
+							'-anomaly',#'-class', '-name', os.path.basename(file),
+							'-delimiter',value_delimiter,
+							'-id', signal_id,
+							'-project',project_Name,
+							],stdout=subprocess.PIPE)
+	signals_used = signals_used + ',' + signal_id
+	
+
+	
+
 	#Launch optimization
 	#print(signals_used)
 	result = subprocess.run([NEAI_CLI_path,#str('.'+NEAI_CLI_path),
@@ -190,80 +201,87 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 	return results_dic
 
 def main():
+	result_path ='report_Paderborne_Long_investAD.csv'
+
+	noms = ['K001CSV/','K002CSV/','K003CSV/','K004CSV/','K005CSV/','K006CSV/']
+	abns_ = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
+
 	#Grab command from cli
 	args = read_args()
+
 	with open(result_path, 'a') as f:
-		f.write('Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn\n')
+		f.write('Y,Anom,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn\n')
 
-	for Y in ['Y1','Y2','Y3','Y12','Y123']:
+	for abns in abns_:
+		abns = [abns]
 
-		noms = ['K001CSV/','K002CSV/','K003CSV/','K004CSV/','K005CSV/','K006CSV/']
-		abns = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
+		for Y in ['Y1','Y2','Y3']:#,'Y12','Y123']:
 
-		nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
-		abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
-		
-		nominal_files = []
-		for fold in noms:
-			nom_path = os.path.join(nom_path_root,fold)
-			for f in os.listdir(nom_path):
-				if os.path.isfile(os.path.join(nom_path, f)):
-					nominal_files.append(os.path.join(nom_path, f))
-		
-		abnormal_files = []
-		for fold in abns:
-			abn_path = os.path.join(abn_path_root,fold)
-			for f in os.listdir(abn_path): 
-				if os.path.isfile(os.path.join(abn_path, f)):
-					abnormal_files.append(os.path.join(abn_path, f)) 
+			nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+			abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
 
-		
-		root_name = 'JD-AUTO-clf-'+Y
-		args.nbr_axis = 1
-		if Y == 'Y12': args.nbr_axis = 2
-		if Y == 'Y123': args.nbr_axis = 3
+			nominal_files = []
+			for fold in noms:
+				nom_path = os.path.join(nom_path_root,fold)
+				for f in os.listdir(nom_path):
+					if os.path.isfile(os.path.join(nom_path, f)):
+						nominal_files.append(os.path.join(nom_path, f))
+			
+			abnormal_files = []
+			for fold in abns:
+				abn_path = os.path.join(abn_path_root,fold)
+				for f in os.listdir(abn_path): 
+					if os.path.isfile(os.path.join(abn_path, f)):
+						abnormal_files.append(os.path.join(abn_path, f)) 
 
-		signal_lengths = [256,512,1024]
-		freqs = [512,1024,2048]
 
-		MCU = 'cortex-m4'
-		RAM = 128000
-		search_time = 3600
+			root_name = 'JD-AUTO-ad-'+Y
+			args.nbr_axis = 1
+			if Y == 'Y12': args.nbr_axis = 2
+			if Y == 'Y123': args.nbr_axis = 3
 
-		for freq in freqs:
-			for signal_length in signal_lengths:
-				print(Y,freq,signal_length)
+			signal_lengths = [64]
+			freqs = [2048]
 
-				args.buffer_sizes = [signal_length]
-				args.freq = freq
-				args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
-				try:
-					file_nominal = data_org_run(args,nominal_files)
-				except:
-					continue
-				args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
-				try:
-					file_abnormal = data_org_run(args,abnormal_files)
-				except:
-					continue
-				
-				
-				try:
-					results_dic = NEAI_clf([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
-				except:
-					continue
-				print(file_nominal)
-				print('signal_length',signal_length)
-				print('freq',freq)
-				print('Precision',results_dic['precision'])
-				print('Confidence',results_dic['confidence'])
-				print()
+			MCU = 'cortex-m4'
+			RAM = 128000
+			search_time = 2400#3600
 
-				
-				with open(result_path, 'a') as f:
-					#'Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn'
-					f.write(str(Y+','+str(signal_length)+','+str(freq)+','+str(results_dic['precision'])+','+str(results_dic['confidence'])+','+file_nominal[0]+','+file_abnormal[0]+'\n'))
+			for freq in freqs:
+				for signal_length in signal_lengths:
+					print(Y,abns[0][:-1],freq,signal_length)
 
-		#
+					args.buffer_sizes = [signal_length]
+					args.freq = freq
+					args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
+					try:
+						file_nominal = data_org_run(args,nominal_files)
+					except:
+						continue
+					
+					args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
+					try:
+						file_abnormal = data_org_run(args,abnormal_files)
+					except:
+						continue
+					
+					
+					try:
+						results_dic = NEAI_clf([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
+					except:
+						continue
+					print(file_nominal)
+					print('signal_length',signal_length)
+					print('freq',freq)
+					print('Precision',results_dic['precision'])
+					print('Confidence',results_dic['confidence'])
+					print()
+
+					
+					with open(result_path, 'a') as f:
+						#'Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn'
+						f.write(str(Y+','+abns[0][:-1]+','+str(signal_length)+','+str(freq)+','+str(results_dic['precision'])+','+str(results_dic['confidence'])+','+file_nominal[0]+','+file_abnormal[0]+'\n'))
+
+			#
 
 main()
