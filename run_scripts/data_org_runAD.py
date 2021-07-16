@@ -201,87 +201,87 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 	return results_dic
 
 def main():
-	result_path ='report_Paderborne_Long_investAD.csv'
+	result_path ='report_Paderborne_AD_Y12.csv'
 
 	noms = ['K001CSV/','K002CSV/','K003CSV/','K004CSV/','K005CSV/','K006CSV/']
-	abns_ = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
+	abns = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
 
 	#Grab command from cli
 	args = read_args()
 
 	with open(result_path, 'a') as f:
-		f.write('Y,Anom,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn\n')
+		f.write('Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn\n')
 
-	for abns in abns_:
-		abns = [abns]
+	# for noms in noms_:
+	# 	noms = [noms]
 
-		for Y in ['Y1','Y2','Y3']:#,'Y12','Y123']:
+	for Y in ['Y12']:
 
-			nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
-			abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+		nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+		abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
 
-			nominal_files = []
-			for fold in noms:
-				nom_path = os.path.join(nom_path_root,fold)
-				for f in os.listdir(nom_path):
-					if os.path.isfile(os.path.join(nom_path, f)):
-						nominal_files.append(os.path.join(nom_path, f))
-			
-			abnormal_files = []
-			for fold in abns:
-				abn_path = os.path.join(abn_path_root,fold)
-				for f in os.listdir(abn_path): 
-					if os.path.isfile(os.path.join(abn_path, f)):
-						abnormal_files.append(os.path.join(abn_path, f)) 
+		nominal_files = []
+		for fold in noms:
+			nom_path = os.path.join(nom_path_root,fold)
+			for f in os.listdir(nom_path):
+				if os.path.isfile(os.path.join(nom_path, f)):
+					nominal_files.append(os.path.join(nom_path, f))
+		
+		abnormal_files = []
+		for fold in abns:
+			abn_path = os.path.join(abn_path_root,fold)
+			for f in os.listdir(abn_path): 
+				if os.path.isfile(os.path.join(abn_path, f)):
+					abnormal_files.append(os.path.join(abn_path, f)) 
 
 
-			root_name = 'JD-AUTO-ad-'+Y
-			args.nbr_axis = 1
-			if Y == 'Y12': args.nbr_axis = 2
-			if Y == 'Y123': args.nbr_axis = 3
+		root_name = 'JD-AUTO-ad-'+Y
+		args.nbr_axis = 1
+		if Y == 'Y12': args.nbr_axis = 2
+		if Y == 'Y123': args.nbr_axis = 3
 
-			signal_lengths = [64]
-			freqs = [2048]
+		signal_lengths = [16,32,64]
+		freqs = [1024,2048,4096]
 
-			MCU = 'cortex-m4'
-			RAM = 128000
-			search_time = 2400#3600
+		MCU = 'cortex-m4'
+		RAM = 128000
+		search_time = 3600
 
-			for freq in freqs:
-				for signal_length in signal_lengths:
-					print(Y,abns[0][:-1],freq,signal_length)
+		for freq in freqs:
+			for signal_length in signal_lengths:
+				print(Y,noms[0][:-1],freq,signal_length)
 
-					args.buffer_sizes = [signal_length]
-					args.freq = freq
-					args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
-					try:
-						file_nominal = data_org_run(args,nominal_files)
-					except:
-						continue
-					
-					args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
-					try:
-						file_abnormal = data_org_run(args,abnormal_files)
-					except:
-						continue
-					
-					
-					try:
-						results_dic = NEAI_clf([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
-					except:
-						continue
-					print(file_nominal)
-					print('signal_length',signal_length)
-					print('freq',freq)
-					print('Precision',results_dic['precision'])
-					print('Confidence',results_dic['confidence'])
-					print()
+				args.buffer_sizes = [signal_length]
+				args.freq = freq
+				args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
+				try:
+					file_nominal = data_org_run(args,nominal_files)
+				except:
+					continue
+				
+				args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
+				try:
+					file_abnormal = data_org_run(args,abnormal_files)
+				except:
+					continue
+				
+				
+				try:
+					results_dic = NEAI_clf([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
+				except:
+					continue
+				print(file_nominal)
+				print('signal_length',signal_length)
+				print('freq',freq)
+				print('Precision',results_dic['precision'])
+				print('Confidence',results_dic['confidence'])
+				print()
 
-					
-					with open(result_path, 'a') as f:
-						#'Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn'
-						f.write(str(Y+','+abns[0][:-1]+','+str(signal_length)+','+str(freq)+','+str(results_dic['precision'])+','+str(results_dic['confidence'])+','+file_nominal[0]+','+file_abnormal[0]+'\n'))
+				
+				with open(result_path, 'a') as f:
+					#'Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn'
+					f.write(str(Y+','+str(signal_length)+','+str(freq)+','+str(results_dic['precision'])+','+str(results_dic['confidence'])+','+file_nominal[0]+','+file_abnormal[0]+'\n'))
 
-			#
+		#
 
 main()

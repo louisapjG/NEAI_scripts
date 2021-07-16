@@ -1,0 +1,11 @@
+Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn
+Y,Buffer_length,Subsampling,Precision,Confidence,Source_file_nom,Source_file_abn
+Y12,16,1024,0.549908,0.369315,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_16_F_1024.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_16_F_1024.csv
+Y12,32,1024,0.564406,0.388375,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_32_F_1024.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_32_F_1024.csv
+Y12,64,1024,0.596975,0.377174,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_64_F_1024.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_64_F_1024.csv
+Y12,16,2048,0.573601,0.38453,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_16_F_2048.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_16_F_2048.csv
+Y12,32,2048,0.5888,0.386298,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_32_F_2048.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_32_F_2048.csv
+Y12,64,2048,0.8062499999999999,0.78655,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_64_F_2048.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_64_F_2048.csv
+Y12,16,4096,0.588564,0.383461,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_16_F_4096.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_16_F_4096.csv
+Y12,32,4096,0.616692,0.41959,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_32_F_4096.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_32_F_4096.csv
+Y12,64,4096,0.647768,0.396679,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_Y12_train_64_F_4096.csv,/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_Y12_train_64_F_4096.csv
