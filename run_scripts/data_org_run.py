@@ -11,11 +11,9 @@ import numpy as np
 
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.05.1/neai_cli'
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.05.03.2/neai_cli'
-NEAI_CLI_path = '/home/ludusmagnus/Desktop/neai_cli_unix_v2021.05.14.1/neai_cli'
+#NEAI_CLI_path = '/home/ludusmagnus/Desktop/neai_cli_unix_v2021.05.14.1/neai_cli'
+NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.22.2/neai_cli'
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# *********How to select all Ys and then the individual combinations. Also name column in wrting to CSV*********
-# //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def data_org_run(args, files_in_opt=[]):
 	if files_in_opt != []:
@@ -54,7 +52,6 @@ def data_org_run(args, files_in_opt=[]):
 			else:
 				dfs['train'].append(np_arr_reformatted)
 
-
 		#Merge & write out
 		train = np.concatenate(dfs['train'])
 		train_name = name_out_file(args.output_file, buffer_size, train_val='train', freq=args.freq)
@@ -67,18 +64,28 @@ def data_org_run(args, files_in_opt=[]):
 	
 	return file_out_names
 
-def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,signal_length,freq):
+def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,signal_length,freq,nbr_cores=7):
 	algo_type = "anomaly_detection"#'classification'
 	project_Name = root_name+'-'+'AD'+'-'+str(signal_length)+'-F'+str(freq)
+	
+	#print('Project Name: ',project_Name)
 	
 	#Start NEAI engine
 	result = subprocess.Popen([NEAI_CLI_path,#str('.'+NEAI_CLI_path[NEAI_CLI_path.rfind('/'):]),
 								'engine',
 								'-launch',
 								],cwd=NEAI_CLI_path[:NEAI_CLI_path.rfind('/')],stdout=subprocess.PIPE)
-	#print(result)
-	
+
 	time.sleep(int(21))
+	
+	result = subprocess.run([NEAI_CLI_path,
+							'engine',
+							'-set',
+							'-workspace',
+							'/home/louis/Documents/workspaceNanoEdgeAi/',
+							],stdout=subprocess.PIPE)
+	#print("Post launch workspace set: ",result.stdout,'\n')
+
 	#print('launch')
 	result = subprocess.run([NEAI_CLI_path,
 							'engine',
@@ -91,7 +98,6 @@ def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,s
 							'display',
 							'-print','-no_pretty_print',
 							],stdout=subprocess.PIPE)
-
 	#print('display settings change')
 	#Create project
 	result = subprocess.run([NEAI_CLI_path,#str('.'+NEAI_CLI_path),
@@ -101,6 +107,7 @@ def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,s
 							'-slug_name',project_Name,
 							'-mcu',MCU,
 							'-max_ram',str(RAM),
+							'-max_flash',str(512000),
 							'-number_axis',str(nbr_axis),
 							],stdout=subprocess.PIPE)
 	#print("project creation: ",result.stdout)
@@ -144,7 +151,7 @@ def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,s
 							'-launch',
 							str('-signals='+signals_used),
 							'-project',project_Name,
-							'-nb_cores', str(22),
+							'-nb_cores', str(nbr_cores),
 							],stdout=subprocess.PIPE)
 	#print('Launch: ',json.loads(result.stdout))
 	#time.sleep(5)
@@ -203,9 +210,11 @@ def NEAI_AD(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,s
 
 	return results_dic
 
-def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,signal_length,freq):
+def NEAI_CLF(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,signal_length,freq,nbr_cores=7):
 	algo_type = 'classification'
 	project_Name = root_name+'-'+'CLF'+'-'+str(signal_length)+'-F'+str(freq)
+
+	#print('Project Name: ',project_Name)
 	
 	#Start NEAI engine
 	result = subprocess.Popen([NEAI_CLI_path,#str('.'+NEAI_CLI_path[NEAI_CLI_path.rfind('/'):]),
@@ -215,6 +224,14 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 	#print(result)
 	
 	time.sleep(int(21))
+
+	result = subprocess.run([NEAI_CLI_path,
+							'engine',
+							'-set',
+							'-workspace',
+							'/home/louis/Documents/workspaceNanoEdgeAi/',
+							],stdout=subprocess.PIPE)
+
 	#print('launch')
 	result = subprocess.run([NEAI_CLI_path,
 							'engine',
@@ -237,6 +254,7 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 							'-slug_name',project_Name,
 							'-mcu',MCU,
 							'-max_ram',str(RAM),
+							'-max_flash',str(512000),
 							'-number_axis',str(nbr_axis),
 							],stdout=subprocess.PIPE)
 	#print("project creation: ",result.stdout)
@@ -269,7 +287,7 @@ def NEAI_clf(train_files,nbr_axis,root_name,MCU,RAM,value_delimiter,search_time,
 							'-launch',
 							str('-signals='+signals_used),
 							'-project',project_Name,
-							'-nb_cores', str(22),
+							'-nb_cores', str(nbr_cores),
 							],stdout=subprocess.PIPE)
 	#print('Launch: ',json.loads(result.stdout))
 	#time.sleep(5)
@@ -347,25 +365,29 @@ def Ys_gen(noms,abns,nom_path_root,abn_path_root):
 
 	return nominal_files, abnormal_files
 
-def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name):
+def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores):
 	args.buffer_sizes = [signal_length]
 	args.freq = freq
-	args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
+	args.output_file = '/home/louis/Desktop/John Deere/Bearing Failure/Data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
+	
 	try:
 		file_nominal = data_org_run(args,nominal_files)
-	except:
-		continue
+	except Exception as e:
+		print('Step1: ',e)
+		return
 	
-	args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
+	args.output_file = '/home/louis/Desktop/John Deere/Bearing Failure/Data_trans/abn_'+Y+'.csv'
 	try:
 		file_abnormal = data_org_run(args,abnormal_files)
-	except:
-		continue
+	except Exception as e:
+		print('Step2: ',e)
+		return
 	
 	try:
-		results_dic = NEAI_AD([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
-	except:
-		continue
+		results_dic = NEAI_AD([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq,nbr_cores)
+	except Exception as e:
+		print('Step3: ',e)
+		return
 	print('AD')
 	print(file_nominal)
 	print('signal_length',signal_length)
@@ -379,9 +401,10 @@ def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,
 		f.write(str(Y+','+Y_name+','+str(signal_length)+','+str(freq)+','+str(results_dic['precision'])+','+str(results_dic['confidence'])+','+file_nominal[0]+','+file_abnormal[0]+'\n'))
 
 	try:
-		results_dic = NEAI_CLF([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq)
-	except:
-		continue
+		results_dic = NEAI_CLF([file_nominal[0],file_abnormal[0]],args.nbr_axis,root_name,MCU,RAM,args.value_delimiter,search_time,signal_length,freq,nbr_cores)
+	except Exception as e:
+		print('Step4: ',e)
+		return
 	print('CLF')
 	print(file_nominal)
 	print('signal_length',signal_length)
@@ -397,7 +420,7 @@ def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,
 
 
 def main():
-	result_path ='report_Paderborne.csv'
+	result_path ='report_Paderborne_Sub.csv'
 
 	noms = ['K001CSV/','K002CSV/','K003CSV/','K004CSV/','K005CSV/','K006CSV/']
 	abns = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
@@ -410,26 +433,27 @@ def main():
 
 	# for noms in noms_:
 	# 	noms = [noms]
+	nbr_cores = 8
 
-	for Y in ['Y12','Y3','Y1','Y2']:
+	for Y in ['Y12','Y3','Y2','Y1']:
 
 		#Data source
-		nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
-		abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+		nom_path_root = '/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+		abn_path_root = '/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
 
-		root_name = 'JD-AUTO-ad-'+Y
+		root_name = 'JD-AUTO-'+Y
 		args.nbr_axis = 1
 		if Y == 'Y12': args.nbr_axis = 2
 		if Y == 'Y123': args.nbr_axis = 3
 
-		signal_lengths = [16,32,64]
-		freqs = [1024,2048,4096]
+		# signal_lengths = [16,32,64]
+		# freqs = [1024,2048,4096]
 
-		freqs_signL = [[64,2048],[64,1024],[32,4096],[32,2048]]
+		freqs_signL = [[2048,64],[64,2048],[32,4096],[64,1024],[32,2048]]
 
 		MCU = 'cortex-m4'
 		RAM = 128000
-		search_time = 3600
+		search_time = int(3600*3)
 
 		# for freq in freqs:
 		# 	for signal_length in signal_lengths:
@@ -439,21 +463,22 @@ def main():
 			Y_name = "Y_full"
 			nominal_files, abnormal_files = Ys_gen(noms,abns,nom_path_root,abn_path_root)
 
-			print(Y,Y_name,freq,signal_length)
+			#print(Y,Y_name,freq,signal_length)
 
-			run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name)
+			#run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
-			for n in range(len(nominal_files)):
+			for n in range(len(noms)):
 				Y_name = noms[n][:-1]
-				nominal_file = nominal_files[n]
+				nominal_files, abnormal_files = Ys_gen([noms[n]],abns,nom_path_root,abn_path_root)
 				print(Y,Y_name,freq,signal_length)
-				run_AD_CLF(args,signal_length,freq,Y,[nominal_file],abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name)
+				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
-			for a in range(len(abnormal_files)):
+
+			for a in range(len(abns)):
 				Y_name = abns[a][:-1]
-				abnormal_file = abnormal_files[n]
+				nominal_files, abnormal_files = Ys_gen(noms,[abns[a]],nom_path_root,abn_path_root)
 				print(Y,Y_name,freq,signal_length)
-				run_AD_CLF(args,signal_length,freq,Y,nominal_files,[abnormal_file],root_name,MCU,RAM,search_time,result_path,Y_name)
+				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
 
 			
