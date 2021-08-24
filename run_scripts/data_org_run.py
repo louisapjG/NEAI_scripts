@@ -11,8 +11,8 @@ import numpy as np
 
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.05.1/neai_cli'
 #NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.05.03.2/neai_cli'
-#NEAI_CLI_path = '/home/ludusmagnus/Desktop/neai_cli_unix_v2021.05.14.1/neai_cli'
-NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.22.2/neai_cli'
+NEAI_CLI_path = '/home/ludusmagnus/Desktop/neai_cli_unix_v2021.05.14.1/neai_cli'
+#NEAI_CLI_path = '/home/louis/Desktop/neai_cli_unix_v2021.03.22.2/neai_cli'
 
 
 def data_org_run(args, files_in_opt=[]):
@@ -368,7 +368,7 @@ def Ys_gen(noms,abns,nom_path_root,abn_path_root):
 def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores):
 	args.buffer_sizes = [signal_length]
 	args.freq = freq
-	args.output_file = '/home/louis/Desktop/John Deere/Bearing Failure/Data_trans/nom_'+Y+'.csv'#'/home/ludusmagnus/Desktop/datasets/data_trans/nom_'+Y+'.csv'
+	args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/nom_'+Y+'.csv'#'/home/louis/Desktop/John Deere/Bearing Failure/Data_trans/nom_'+Y+'.csv'
 	
 	try:
 		file_nominal = data_org_run(args,nominal_files)
@@ -376,7 +376,7 @@ def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,
 		print('Step1: ',e)
 		return
 	
-	args.output_file = '/home/louis/Desktop/John Deere/Bearing Failure/Data_trans/abn_'+Y+'.csv'
+	args.output_file = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/data_trans/abn_'+Y+'.csv'
 	try:
 		file_abnormal = data_org_run(args,abnormal_files)
 	except Exception as e:
@@ -420,7 +420,7 @@ def run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,
 
 
 def main():
-	result_path ='report_Paderborne_Sub.csv'
+	result_path ='report_Paderborne.csv'
 
 	noms = ['K001CSV/','K002CSV/','K003CSV/','K004CSV/','K005CSV/','K006CSV/']
 	abns = ['KA04CSV/','KA15CSV/','KA22CSV/','KA30CSV/','KB23CSV/','KB24CSV/','KB27CSV/','KI04CSV/','KI14CSV/','KI16CSV/','KI17CSV/','KI18CSV/','KI21CSV/']
@@ -433,13 +433,13 @@ def main():
 
 	# for noms in noms_:
 	# 	noms = [noms]
-	nbr_cores = 8
+	nbr_cores = 26
 
-	for Y in ['Y12','Y3','Y2','Y1']:
+	for Y in ['Y12','Y3','Y2','Y1','Y123']:
 
 		#Data source
-		nom_path_root = '/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
-		abn_path_root = '/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'#'/home/ludusmagnus/Desktop/datasets/paderborn_csv/'+Y+'/'
+		nom_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'
+		abn_path_root = '/media/ludusmagnus/b3008e59-6246-4c41-a0ce-b9090b4d8f99/paderborn_csv/'+Y+'/'#'/home/louis/Desktop/John Deere/Bearing Failure/Data/paderborn_csv/'+Y+'/'
 
 		root_name = 'JD-AUTO-'+Y
 		args.nbr_axis = 1
@@ -449,7 +449,7 @@ def main():
 		# signal_lengths = [16,32,64]
 		# freqs = [1024,2048,4096]
 
-		freqs_signL = [[2048,64],[64,2048],[32,4096],[64,1024],[32,2048]]
+		freqs_signL = [[2048,64],[32,4096],[64,1024],[32,2048],[64,2048]]
 
 		MCU = 'cortex-m4'
 		RAM = 128000
@@ -460,25 +460,27 @@ def main():
 		for freq, signal_length in  freqs_signL:
 
 			#for Yc in range(len(noms)+len(abns)+1):
-			Y_name = "Y_full"
+			Y_name = "Y-full"
 			nominal_files, abnormal_files = Ys_gen(noms,abns,nom_path_root,abn_path_root)
 
-			#print(Y,Y_name,freq,signal_length)
-
-			#run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
+			print(Y,Y_name,freq,signal_length)
+			root_name_ = root_name+Y_name
+			run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name_,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
 			for n in range(len(noms)):
 				Y_name = noms[n][:-1]
 				nominal_files, abnormal_files = Ys_gen([noms[n]],abns,nom_path_root,abn_path_root)
 				print(Y,Y_name,freq,signal_length)
-				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
+				root_name_ = root_name+Y_name
+				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name_,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
 
 			for a in range(len(abns)):
 				Y_name = abns[a][:-1]
 				nominal_files, abnormal_files = Ys_gen(noms,[abns[a]],nom_path_root,abn_path_root)
 				print(Y,Y_name,freq,signal_length)
-				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
+				root_name_ = root_name+Y_name
+				run_AD_CLF(args,signal_length,freq,Y,nominal_files,abnormal_files,root_name_,MCU,RAM,search_time,result_path,Y_name,nbr_cores)
 
 
 			
